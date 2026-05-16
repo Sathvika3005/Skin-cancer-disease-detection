@@ -80,31 +80,30 @@ if uploaded_file is not None:
     predicted_class = classes[predicted_index]
 
     # Threshold check
-    if confidence < 97:
+    if confidence < 80:
         st.warning("No Skin Disease Detected")
+        st.info(f"Predicted: {predicted_class} with {confidence:.2f}% confidence")
     else:
-
-        st.success(f"Prediction: {predicted_class}")
+        st.success(f"Disease Detected: {predicted_class}")
         st.info(f"Confidence: {confidence:.2f}%")
 
-        # Grad-CAM only if disease detected
+    # Grad-CAM visualization
+    try:
         heatmap = make_gradcam_heatmap(img_array, model, "Conv_1")
-
-        heatmap = cv2.resize(heatmap,(224,224))
+        heatmap = cv2.resize(heatmap, (224, 224))
         heatmap = np.uint8(255 * heatmap)
-
         heatmap = cv2.applyColorMap(heatmap, cv2.COLORMAP_JET)
-
         superimposed_img = cv2.addWeighted(
             np.array(image_resized), 0.6,
             heatmap, 0.4,
             0
         )
-
         st.image(
             superimposed_img.astype("uint8"),
             caption="Grad-CAM Visualization",
             use_container_width=True
         )
+    except Exception as e:
+        st.error(f"Error generating Grad-CAM: {str(e)}")
 
 # Disclaimer
